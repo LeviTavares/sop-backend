@@ -18,12 +18,13 @@ public class DespesaController {
 
   @GetMapping
   public Page<DespesaDTO> listar(
-      @RequestParam(required = false) String tipoDespesa,
-      @RequestParam(required = false) String credor,
-      @RequestParam(required = false) String numeroProtocolo,
-      @RequestParam(required = false) String dataInicio, // dd/MM/yyyy
-      @RequestParam(required = false) String dataFim,    // dd/MM/yyyy
-      Pageable pageable) {
+      @RequestParam(name = "tipoDespesa", required = false) String tipoDespesa,
+      @RequestParam(name = "credor", required = false) String credor,
+      @RequestParam(name = "numeroProtocolo", required = false) String numeroProtocolo,
+      @RequestParam(name = "dataInicio", required = false) String dataInicio, // dd/MM/yyyy
+      @RequestParam(name = "dataFim", required = false) String dataFim,    // dd/MM/yyyy
+      Pageable pageable
+  ) {
     return service.listar(tipoDespesa, credor, numeroProtocolo, dataInicio, dataFim, pageable)
                   .map(DespesaMapper::toDTO);
   }
