@@ -3,6 +3,9 @@ package br.ce.sop.service;
 
 import br.ce.sop.domain.Despesa;
 import br.ce.sop.domain.TipoDespesa;
+import br.ce.sop.domain.Pagamento;
+import br.ce.sop.domain.Empenho;
+import br.ce.sop.domain.StatusDespesa;
 import br.ce.sop.dto.DespesaCreateDTO;
 import br.ce.sop.exception.BusinessException;
 import br.ce.sop.exception.NotFoundException;
@@ -15,6 +18,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -91,4 +95,38 @@ public class DespesaService {
     if (countEmp > 0) throw new BusinessException("Não é permitido excluir despesa com empenhos");
     repo.delete(d);
   }
+
+  public StatusDespesa calcularStatus(Long id) {
+    Despesa despesa = buscar(id);
+
+    BigDecimal valorDespesa = despesa.getValor();
+
+    BigDecimal somaEmpenhos = despesa.getEmpenhos().stream()
+            .map(Empenho::getValor)
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+    BigDecimal somaPagamentos = despesa.getEmpenhos().stream()
+            .flatMap(e -> e.getPagamentos().stream())
+            .map(Pagamento::getValor)
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+    if (somaEmpenhos.compareTo(BigDecimal.ZERO) == 0) {
+      return StatusDespesa.AGUARDANDO_EMPENHO;
+    }
+    if (somaEmpenhos.compareTo(valorDespesa) < 0) {
+      return StatusDespesa.PARCIALMENTE_EMPENHADA;
+    }
+    if (somaEmpenhos.compareTo(valorDespesa) == 0 && somaPagamentos.compareTo(BigDecimal.ZERO) == 0) {
+      return StatusDespesa.AGUARDANDO_PAGAMENTO;
+    }
+    if (somaPagamentos.compareTo(valorDespesa) < 0 && somaPagamentos.compareTo(BigDecimal.ZERO) > 0) {
+      return StatusDespesa.PARCIALMENTE_PAGA;
+    }
+    if (somaPagamentos.compareTo(valorDespesa) == 0) {
+      return StatusDespesa.PAGA;
+    }
+
+    return StatusDespesa.AGUARDANDO_EMPENHO; // fallback
+  }
+
 }

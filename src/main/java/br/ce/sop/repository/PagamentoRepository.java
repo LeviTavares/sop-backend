@@ -6,6 +6,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import java.math.BigDecimal;
 
 public interface PagamentoRepository extends JpaRepository<Pagamento, Long>, JpaSpecificationExecutor<Pagamento> {
@@ -14,4 +16,6 @@ public interface PagamentoRepository extends JpaRepository<Pagamento, Long>, Jpa
 
   boolean existsByNumeroPagamento(String numeroPagamento);
   int countByEmpenho_Id(Long empenhoId);
+
+  Page<Pagamento> findByEmpenho_Id(Long empenhoId, Pageable pageable);
 }

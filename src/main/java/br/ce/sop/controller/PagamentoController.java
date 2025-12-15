@@ -11,35 +11,33 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping
+@RequestMapping("/api/pagamentos")
 public class PagamentoController {
   private final PagamentoService service;
   public PagamentoController(PagamentoService service) { this.service = service; }
 
-  @GetMapping("/api/pagamentos")
+  @GetMapping
   public Page<PagamentoDTO> listar(
-      @RequestParam(required = false) Long empenhoId,
-      @RequestParam(required = false) String numeroPagamento,
-      @RequestParam(required = false) String dataInicio, // dd/MM/yyyy
-      @RequestParam(required = false) String dataFim,    // dd/MM/yyyy
+      @RequestParam(name = "empenhoId", required = false) Long empenhoId,
+      @RequestParam(name = "numeroPagamento", required = false) String numeroPagamento,
+      @RequestParam(name = "dataInicio", required = false) String dataInicio, // dd/MM/yyyy
+      @RequestParam(name = "dataFim", required = false) String dataFim,    // dd/MM/yyyy
       Pageable pageable) {
     return service.listar(empenhoId, numeroPagamento, dataInicio, dataFim, pageable)
                   .map(PagamentoMapper::toDTO);
   }
 
-  @GetMapping("/api/pagamentos/{id}")
-  public PagamentoDTO buscar(@PathVariable Long id) { return PagamentoMapper.toDTO(service.buscar(id)); }
+  @GetMapping("/{id}")
+  public PagamentoDTO buscar(@PathVariable("id") Long id) { return PagamentoMapper.toDTO(service.buscar(id)); }
 
-  @PostMapping("/api/empenhos/{empenhoId}/pagamentos")
-  public PagamentoDTO criar(@PathVariable Long empenhoId, @Valid @RequestBody PagamentoCreateDTO dto) {
-    return PagamentoMapper.toDTO(service.criar(empenhoId, dto));
-  }
 
-  @PutMapping("/api/pagamentos/{id}")
-  public PagamentoDTO atualizar(@PathVariable Long id, @Valid @RequestBody PagamentoCreateDTO dto) {
+
+  @PutMapping("/{id}")
+  public PagamentoDTO atualizar(@PathVariable("id") Long id,
+                                @Valid @RequestBody PagamentoCreateDTO dto) {
     return PagamentoMapper.toDTO(service.atualizar(id, dto));
   }
 
-  @DeleteMapping("/api/pagamentos/{id}")
-  public void excluir(@PathVariable Long id) { service.excluir(id); }
+  @DeleteMapping("/{id}")
+  public void excluir(@PathVariable("id") Long id) { service.excluir(id); }
 }

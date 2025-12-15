@@ -3,43 +3,59 @@ package br.ce.sop.controller;
 
 import br.ce.sop.dto.EmpenhoCreateDTO;
 import br.ce.sop.dto.EmpenhoDTO;
+import br.ce.sop.dto.PagamentoCreateDTO;
+import br.ce.sop.dto.PagamentoDTO;
 import br.ce.sop.mapper.EmpenhoMapper;
+import br.ce.sop.mapper.PagamentoMapper;
 import br.ce.sop.service.EmpenhoService;
+import br.ce.sop.service.PagamentoService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping
+@RequestMapping("/api/empenhos")
 public class EmpenhoController {
-  private final EmpenhoService service;
-  public EmpenhoController(EmpenhoService service) { this.service = service; }
+  private final EmpenhoService empenhoService;
+  private final PagamentoService pagamentoService;
+  public EmpenhoController(EmpenhoService empenhoService, PagamentoService pagamentoService) {
+    this.empenhoService = empenhoService;
+    this.pagamentoService = pagamentoService;
+  }
 
-  @GetMapping("/api/empenhos")
+  @GetMapping
   public Page<EmpenhoDTO> listar(
-      @RequestParam(required = false) Long despesaId,
-      @RequestParam(required = false) String numeroEmpenho,
-      @RequestParam(required = false) String dataInicio, // dd/MM/yyyy
-      @RequestParam(required = false) String dataFim,    // dd/MM/yyyy
+      @RequestParam(name = "despesaId", required = false) Long despesaId,
+      @RequestParam(name = "numeroEmpenho", required = false) String numeroEmpenho,
+      @RequestParam(name = "dataInicio", required = false) String dataInicio, // dd/MM/yyyy
+      @RequestParam(name = "dataFim", required = false) String dataFim,    // dd/MM/yyyy
       Pageable pageable) {
-    return service.listar(despesaId, numeroEmpenho, dataInicio, dataFim, pageable)
+    return empenhoService.listar(despesaId, numeroEmpenho, dataInicio, dataFim, pageable)
                   .map(EmpenhoMapper::toDTO);
   }
 
-  @GetMapping("/api/empenhos/{id}")
-  public EmpenhoDTO buscar(@PathVariable Long id) { return EmpenhoMapper.toDTO(service.buscar(id)); }
+  @GetMapping("/{id}")
+  public EmpenhoDTO buscar(@PathVariable("id") Long id) { return EmpenhoMapper.toDTO(empenhoService.buscar(id)); }
 
-  @PostMapping("/api/despesas/{despesaId}/empenhos")
-  public EmpenhoDTO criar(@PathVariable Long despesaId, @Valid @RequestBody EmpenhoCreateDTO dto) {
-    return EmpenhoMapper.toDTO(service.criar(despesaId, dto));
+  @GetMapping("/{id}/pagamentos")
+  public Page<PagamentoDTO> listarPagamentos(@PathVariable("id") Long empenhoId, Pageable pageable) {
+    return pagamentoService.listarPorEmpenho(empenhoId, pageable)
+            .map(PagamentoMapper::toDTO);
   }
 
-  @PutMapping("/api/empenhos/{id}")
-  public EmpenhoDTO atualizar(@PathVariable Long id, @Valid @RequestBody EmpenhoCreateDTO dto) {
-    return EmpenhoMapper.toDTO(service.atualizar(id, dto));
+  @PostMapping("/{id}/pagamentos")
+  public PagamentoDTO criar(@PathVariable("id") Long empenhoId,
+                            @Valid @RequestBody PagamentoCreateDTO dto) {
+    return PagamentoMapper.toDTO(pagamentoService.criar(empenhoId, dto));
   }
 
-  @DeleteMapping("/api/empenhos/{id}")
-  public void excluir(@PathVariable Long id) { service.excluir(id); }
+  @PutMapping("/{id}")
+  public EmpenhoDTO atualizar(@PathVariable("id") Long id,
+                              @Valid @RequestBody EmpenhoCreateDTO dto) {
+    return EmpenhoMapper.toDTO(empenhoService.atualizar(id, dto));
+  }
+
+  @DeleteMapping("/{id}")
+  public void excluir(@PathVariable("id") Long id) { empenhoService.excluir(id); }
 }

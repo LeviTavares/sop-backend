@@ -55,6 +55,10 @@ public class EmpenhoService {
     return repo.findAll(spec, pageable);
   }
 
+  public Page<Empenho> listarPorDespesa(Long despesaId, Pageable pageable) {
+    return repo.findByDespesa_Id(despesaId, pageable);
+  }
+
   public Empenho buscar(Long id) { return repo.findById(id).orElseThrow(() -> new NotFoundException("Empenho não encontrado")); }
 
   @Transactional

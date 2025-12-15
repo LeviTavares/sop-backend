@@ -51,6 +51,10 @@ public class PagamentoService {
     return repo.findAll(spec, pageable);
   }
 
+  public Page<Pagamento> listarPorEmpenho(Long empenhoId, Pageable pageable) {
+    return repo.findByEmpenho_Id(empenhoId, pageable);
+  }
+
   public Pagamento buscar(Long id) { return repo.findById(id).orElseThrow(() -> new NotFoundException("Pagamento não encontrado")); }
 
   @Transactional
